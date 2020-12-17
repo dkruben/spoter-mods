@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import math
 
 from CurrentVehicle import g_currentVehicle
@@ -36,25 +36,25 @@ i18n = {
     'UI_TOOLTIPS_speedMsec_Text'               : 'm/sec.',
 }
 if 'ru' in getLanguageCode().lower():
-    i18n = {
-        'UI_TOOLTIPS_StabBonus_Text'               : 'Бонус стабилизации',
-        'UI_TOOLTIPS_StabBonus_ColorPositive'      : '#28F09C',
-        'UI_TOOLTIPS_StabBonus_ColorNeutral'       : '#7CD606',
-        'UI_TOOLTIPS_Stabilization_Text'           : 'Общая стабилизация',
-        'UI_TOOLTIPS_Stabilization_Color'          : '#FFD700',
-        'UI_TOOLTIPS_MovementSpeed_Text'           : 'при макс. скорости',
-        'UI_TOOLTIPS_MovementSpeed_Color'          : '#8378FC',
-        'UI_TOOLTIPS_RotatingVehicle_Text'         : 'при развороте танка',
-        'UI_TOOLTIPS_RotatingVehicle_Color'        : '#1CC6D9',
-        'UI_TOOLTIPS_RotatingTurret_Text'          : 'при повороте башни',
-        'UI_TOOLTIPS_RotatingTurret_Color'         : '#F200DA',
-        'UI_TOOLTIPS_modulesText_Text'             : "[По модулям] <font color='#FFA500'>{}</font>",
-        'UI_TOOLTIPS_modulesTextTooltip_Text'      : " [По модулям]",
-        'UI_TOOLTIPS_modulesTextTooltipBattle_Text': "%s, <font color='#FFA500'>[По модулям] %s</font>",
-        'UI_TOOLTIPS_tracerSpeedText_Text'         : '[Трассер]',
-        'UI_TOOLTIPS_shellSpeedText_Text'          : '[Снаряд]',
-        'UI_TOOLTIPS_speedMsec_Text'               : 'м/сек.',
-    }
+    self.i18n = {
+    'UI_TOOLTIPS_StabBonus_Text': 'Бонус стабилизации',
+    'UI_TOOLTIPS_StabBonus_ColorPositive': '#28F09C',
+    'UI_TOOLTIPS_StabBonus_ColorNeutral': '#7CD606',
+    'UI_TOOLTIPS_Stabilization_Text': 'Общая стабилизация',
+    'UI_TOOLTIPS_Stabilization_Color': '#FFD700',
+    'UI_TOOLTIPS_MovementSpeed_Text': 'при макс. скорости',
+    'UI_TOOLTIPS_MovementSpeed_Color': '#8378FC',
+    'UI_TOOLTIPS_RotatingVehicle_Text': 'при развороте танка',
+    'UI_TOOLTIPS_RotatingVehicle_Color': '#1CC6D9',
+    'UI_TOOLTIPS_RotatingTurret_Text': 'при повороте башни',
+    'UI_TOOLTIPS_RotatingTurret_Color': '#F200DA',
+    'UI_TOOLTIPS_modulesText_Text': "[По модулям] <font color='#FFA500'>{}</font>",
+    'UI_TOOLTIPS_modulesTextTooltip_Text': " [По модулям]",
+    'UI_TOOLTIPS_modulesTextTooltipBattle_Text': "%s, <font color='#FFA500'>[По модулям] %s</font>",
+    'UI_TOOLTIPS_tracerSpeedText_Text': '[Трассер]',
+    'UI_TOOLTIPS_shellSpeedText_Text': '[Снаряд]',
+    'UI_TOOLTIPS_speedMsec_Text': 'м/сек.',
+}
 if 'de' in getLanguageCode().lower():
     i18n = {
     'UI_TOOLTIPS_StabBonus_ColorPositive'      : '#28F09C',
@@ -165,7 +165,7 @@ if 'tr' in getLanguageCode().lower():
     'UI_TOOLTIPS_RotatingTurret_Color'         : '#F200DA',
     'UI_TOOLTIPS_StabBonus_Text'               : 'Stabilizasyon Bonusu',
     'UI_TOOLTIPS_Stabilization_Text'           : 'Toplam stabilizasyon',
-    'UI_TOOLTIPS_MovementSpeed_Text'           : 'Maksimum hızdayken',
+    'UI_TOOLTIPS_MovementSpeed_Text'           : 'Maksimum hizdayken',
     'UI_TOOLTIPS_RotatingVehicle_Text'         : 'Tank donerken',
     'UI_TOOLTIPS_RotatingTurret_Text'          : 'Taret donerken',
     'UI_TOOLTIPS_modulesText_Text'             : "[Modullere] <font color='#FFA500'>{}</font>",
@@ -183,16 +183,16 @@ if 'pt' in getLanguageCode().lower():
     'UI_TOOLTIPS_MovementSpeed_Color'          : '#8378FC',
     'UI_TOOLTIPS_RotatingVehicle_Color'        : '#1CC6D9',
     'UI_TOOLTIPS_RotatingTurret_Color'         : '#F200DA',
-    'UI_TOOLTIPS_StabBonus_Text'               : 'Bфnus de estabilizaзгo',
-    'UI_TOOLTIPS_Stabilization_Text'           : 'Estabilizaзгo total',
-    'UI_TOOLTIPS_MovementSpeed_Text'           : 'Quando em velocidade máxima',
+    'UI_TOOLTIPS_StabBonus_Text'               : 'Bonus de estabilizacao',
+    'UI_TOOLTIPS_Stabilization_Text'           : 'Estabilizacao total',
+    'UI_TOOLTIPS_MovementSpeed_Text'           : 'Quando em velocidade maxima',
     'UI_TOOLTIPS_RotatingVehicle_Text'         : 'Ao virar o veículo',
     'UI_TOOLTIPS_RotatingTurret_Text'          : 'Ao virar a torre',
-    'UI_TOOLTIPS_modulesText_Text'             : "[Para módulos] <font color='#FFA500'>{}</font>",
-    'UI_TOOLTIPS_modulesTextTooltip_Text'      : " [Para módulos]",
-    'UI_TOOLTIPS_modulesTextTooltipBattle_Text': "%s, <font color='#FFA500'>[Para módulos] %s</font>",
+    'UI_TOOLTIPS_modulesText_Text'             : "[Para modulos] <font color='#FFA500'>{}</font>",
+    'UI_TOOLTIPS_modulesTextTooltip_Text'      : " [Para modulos]",
+    'UI_TOOLTIPS_modulesTextTooltipBattle_Text': "%s, <font color='#FFA500'>[Para modulos] %s</font>",
     'UI_TOOLTIPS_tracerSpeedText_Text'         : '[Marcador]',
-    'UI_TOOLTIPS_shellSpeedText_Text'          : '[Munição]',
+    'UI_TOOLTIPS_shellSpeedText_Text'          : '[Municao]',
     'UI_TOOLTIPS_speedMsec_Text'               : 'm/seg.',
 }
 
