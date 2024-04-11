@@ -1,5 +1,4 @@
 ﻿# -*- coding: utf-8 -*-
-
 import BigWorld
 import Keys
 import Math
@@ -10,18 +9,63 @@ from gui import InputHandler
 from Avatar import PlayerAvatar
 from AvatarInputHandler.aih_global_binding import CTRL_MODE_NAME
 # noinspection PyProtectedMember
-from bootcamp.BootcampMarkers import _StaticObjectMarker3D as StaticObjectMarker3D
 from gui.shared.gui_items.Vehicle import VEHICLE_CLASS_NAME
 from gui.shared.gui_items import Vehicle
 from CombatSelectedArea import CombatSelectedArea
 
 
+# --- Added after 1.24.1 | old from bootcamp.BootcampMarkers import _StaticObjectMarker3D as StaticObjectMarker3D
+class _StaticWorldObjectMarker3D(object):
+    def __init__(self, data, position):
+        self.__path = data.get('path')
+        offset = data.get('offset', Math.Vector3(0, 0, 0))
+        self.__model = None
+        self.__isMarkerVisible = True
+        self.__modelOwner = None
+        self.__destroyed = False
+        if self.__path is not None:
+            modelPosition = Math.Vector3(position[:]) + offset
+            resourceRefs = BigWorld.loadResourceListFG([self.__path])
+            self.__onModelLoaded(resourceRefs, modelPosition)
+
+    def addMarkerModel(self):
+        if self.__model is None or self.__modelOwner is not None:
+            return
+        self.__modelOwner = BigWorld.player()
+        self.__modelOwner.addModel(self.__model)
+
+    def clear(self):
+        self.setVisible(False)
+        self.__model = None
+        self.__destroyed = True
+
+    def setVisible(self, isVisible):
+        if not self.__isMarkerVisible and isVisible:
+            self.__isMarkerVisible = True
+            self.addMarkerModel()
+        elif not isVisible:
+            self.__isMarkerVisible = False
+            if self.__modelOwner is not None and not self.__modelOwner.isDestroyed:
+                self.__modelOwner.delModel(self.__model)
+            self.__modelOwner = None
+
+    def __onModelLoaded(self, resourceRefs, position):
+        if self.__destroyed:
+            return
+        if self.__path not in resourceRefs.failedIDs:
+            self.__model = resourceRefs[self.__path]
+            self.__model.position = position
+            self.__model.castsShadow = False
+            if self.__isMarkerVisible:
+                self.addMarkerModel()
+
+
 class Config(object):
     def __init__(self):
         self.ids = 'artySplash'
-        self.version = 'v2.17 (2023-08-13)'
+        self.version = 'v2.18 (2024-04-11)'
         self.author = 'by spoter'
-        self.version_id = 217
+        self.version_id = 218
         self.buttons = {
             'buttonShowDot'   : [Keys.KEY_C, [Keys.KEY_LALT, Keys.KEY_RALT]],
             'buttonShowSplash': [Keys.KEY_Z, [Keys.KEY_LALT, Keys.KEY_RALT]]
@@ -108,19 +152,14 @@ class ArtyBall(object):
 
     def startBattle(self):
         InputHandler.g_instance.onKeyDown += self.injectButton
-        # InputHandler.g_instance.onKeyUp += self.injectButton
         if config.data['enabled']:
             self.player = BigWorld.player()
             self.modelSplashVisible = config.data['showSplashOnDefault']
             self.modelDotVisible = config.data['showDotOnDefault']
             self.scaleSplash = None
-            self.modelSplash = StaticObjectMarker3D({
-                'path': config.data['modelPathSplash']
-            }, (0, 0, 0))
-            self.modelDot = StaticObjectMarker3D({
-                'path': config.data['modelPathDot']
-            }, (0, 0, 0))
-            self.modelDot._StaticObjectMarker3D__model.sacle = (0.1, 0.1, 0.1) # они больные! поменяли BigWorld.Model().scale на BigWorld.Model().saсle как такое вообще в голову пришло? лучшие наркоманы в индустрии
+            self.modelSplash = _StaticWorldObjectMarker3D({'path': config.data['modelPathSplash']}, (0, 0, 0))
+            self.modelDot = _StaticWorldObjectMarker3D({'path': config.data['modelPathDot']}, (0, 0, 0))
+            self.modelDot._StaticObjectMarker3D__model.sacle = (0.1, 0.1, 0.1)
             if Vehicle.getVehicleClassTag(self.player.vehicleTypeDescriptor.type.tags) == VEHICLE_CLASS_NAME.SPG:
                 self.modelDot._StaticObjectMarker3D__model.sacle = (0.5, 0.5, 0.5)
             self.modelSplash._StaticObjectMarker3D__model.visible = False
@@ -133,7 +172,6 @@ class ArtyBall(object):
 
     def stopBattle(self):
         InputHandler.g_instance.onKeyDown -= self.injectButton
-        # InputHandler.g_instance.onKeyUp -= self.injectButton
         self.modelSplashVisible = False
         self.modelDotVisible = False
         self.modelSplashKeyPressed = False
