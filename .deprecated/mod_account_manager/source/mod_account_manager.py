@@ -1,18 +1,25 @@
+import codecs
+import hashlib
 import json
 import os
 import time
-import codecs
-import md5
 
 import BigWorld
-
-from gui.Scaleform.framework.entities.abstract.AbstractWindowView import AbstractWindowView
-from gui.app_loader import g_appLoader
-from predefined_hosts import g_preDefinedHosts
-from gui.Scaleform.daapi.view.dialogs import SimpleDialogMeta, DIALOG_BUTTON_ID
+from external_strings_utils import unicode_from_utf8
+from frameworks.wulf import WindowLayer
 from gui import DialogsInterface
-from gui.login import g_loginManager
+from gui.Scaleform.daapi.view.dialogs import SimpleDialogMeta, DIALOG_BUTTON_ID
+from gui.Scaleform.daapi.view.lobby.LobbyView import LobbyView
+from gui.Scaleform.daapi.view.login.LoginView import LoginView
+from gui.Scaleform.daapi.view.login.login_modes import createLoginMode
+from gui.Scaleform.framework import g_entitiesFactories, ViewSettings, ScopeTemplates
+from gui.Scaleform.framework.entities.View import View
+from gui.Scaleform.framework.entities.abstract.AbstractWindowView import AbstractWindowView
+from gui.Scaleform.framework.managers.loaders import SFViewLoadParams
+from gui.shared.personality import ServicesLocator
 from helpers import getLanguageCode
+from predefined_hosts import g_preDefinedHosts
+from skeletons.gui.app_loader import GuiGlobalSpaceID
 
 SHOW_DEBUG = True
 
@@ -34,6 +41,17 @@ I18N = {
     'UI_settingManageYourAccount'  : 'Manage Your account'
 }
 
+
+def getPreferencesDir():
+    preferences_file_path = unicode_from_utf8(BigWorld.wg_getPreferencesFilePath())[1]
+    return os.path.normpath(os.path.dirname(preferences_file_path))
+
+
+def loadWindow(alias):
+    app = ServicesLocator.appLoader.getApp()
+    app.loadView(SFViewLoadParams(alias))
+
+
 def log(*args):
     if SHOW_DEBUG:
         msg = 'DEBUG[account_manager]: '
@@ -46,6 +64,7 @@ def log(*args):
                 msg += '%s' % text
         print msg
 
+
 def bite_ify(inputs):
     if inputs:
         if isinstance(inputs, dict):
@@ -57,6 +76,7 @@ def bite_ify(inputs):
         else:
             return inputs
     return inputs
+
 
 def _load_json(name, configOld, path, save=False):
     configNew = configOld
@@ -86,21 +106,24 @@ def _load_json(name, configOld, path, save=False):
                 log('[ERROR]:     [Not found config, create default: %s' % newPath)
     return configNew
 
-I18N = _load_json('%s'.lower() % getLanguageCode(), I18N, './res_mods/configs/account_manager/i18n/')
+
+I18N = _load_json('%s'.lower() % getLanguageCode(), I18N, './mods/configs/mods_gui/account_manager/i18n/')
+
 
 class AM_MODES:
     ADD = 'add'
     EDIT = 'edit'
     DELETE = 'delete'
 
+
 class Mobj: pass
+
 
 class UserAccounts:
     __accounts_manager = None
 
     def __init__(self):
-        prefsFilePath = unicode(BigWorld.wg_getPreferencesFilePath(), 'utf-8', errors='ignore')
-        self.__accounts_manager = os.path.join(os.path.dirname(prefsFilePath), 'accounts.manager')
+        self.__accounts_manager = os.path.join(getPreferencesDir(), 'accounts.manager')
         if not os.path.isfile(self.__accounts_manager):
             self.accounts = []
             self.write_accounts()
@@ -120,6 +143,7 @@ class UserAccounts:
         with open(self.__accounts_manager, 'w') as f:
             f.write(data)
 
+
 class RemoveConfirmDialogButtons:
     def getLabels(self):
         return [{
@@ -132,9 +156,11 @@ class RemoveConfirmDialogButtons:
             'focused': False
         }]
 
+
 class AccountsManager(AbstractWindowView):
     def __init__(self):
         AbstractWindowView.__init__(self)
+        self._loginMode = createLoginMode(self)
 
     def py_log(self, text):
         print('[AccountsManager]: %s' % text)
@@ -147,7 +173,7 @@ class AccountsManager(AbstractWindowView):
             getattr(form, 'pass').text = BigWorld.wg_ucpdata(account['password'])
             form.server.selectedIndex = int(account['cluster'])
             form.submit.enabled = True
-            g_loginManager.clearToken2Preference()
+            self._loginMode.resetToken()
             self.destroy()
 
     def py_getTranslate(self):
@@ -178,8 +204,8 @@ class AccountsManager(AbstractWindowView):
 
     def py_openAddAccountWindow(self):
         BigWorld.wh_current = Mobj()
-        BigWorld.wh_current.mode = 'add'
-        loadWindow('AccountsManagerSubwindow')
+        BigWorld.wh_current.mode = AM_MODES.ADD
+        loadWindow('AccountsManagerSubWindow')
         self.destroy()
 
     def callFromFlash(self, data):
@@ -194,7 +220,7 @@ class AccountsManager(AbstractWindowView):
                 BigWorld.wh_current.email = BigWorld.wg_ucpdata(account['email'])
                 BigWorld.wh_current.password = BigWorld.wg_ucpdata(account['password'])
                 BigWorld.wh_current.cluster = account['cluster']
-                loadWindow('AccountsManagerSubwindow')
+                loadWindow('AccountsManagerSubWindow')
                 self.destroy()
                 return
         elif data.action == AM_MODES.DELETE:
@@ -229,20 +255,18 @@ class AccountsManager(AbstractWindowView):
     def onModuleDispose(self):
         pass
 
-class AccountsManagerSubwindow(AbstractWindowView):
+
+class AccountsManagerSubWindow(AbstractWindowView):
     __clusters = []
 
     def __init__(self):
         if not self.__clusters:
             for cluster in g_preDefinedHosts.shortList():
-                self.__clusters.append({
-                    'label': cluster[1],
-                    'data' : cluster[1]
-                })
+                self.__clusters.append({'label': cluster[1], 'data': cluster[1]})
         AbstractWindowView.__init__(self)
 
     def py_log(self, text):
-        print('[AccountsManagerSubwindow]: %s' % text)
+        print('[AccountsManagerSubWindow]: %s' % text)
 
     def py_get_clusters(self):
         return self.__clusters
@@ -274,7 +298,7 @@ class AccountsManagerSubwindow(AbstractWindowView):
             'cluster' : cluster,
             'email'   : BigWorld.wg_cpdata(email),
             'password': BigWorld.wg_cpdata(password),
-            'id'      : md5.new('id = %s' % time.time()).hexdigest()
+            'id'      : hashlib.md5('id = %s' % time.time()).hexdigest()
         })
         BigWorld.wh_data.write_accounts()
         BigWorld.wh_data.renew_accounts()
@@ -302,13 +326,75 @@ class AccountsManagerSubwindow(AbstractWindowView):
         self.destroy()
         loadWindow('AccountsManager')
 
-def loadWindow(alias):
-    g_appLoader.getDefLobbyApp().loadView(alias)
 
-def init():
-    from gui.Scaleform.framework import ViewTypes, ScopeTemplates, g_entitiesFactories, ViewSettings
-    BigWorld.wh_data = UserAccounts()
-    g_entitiesFactories.addSettings(ViewSettings('AccountsManager', AccountsManager, 'AccountsManager/AccountsManager.swf', ViewTypes.WINDOW, None, ScopeTemplates.DEFAULT_SCOPE))
-    g_entitiesFactories.addSettings(ViewSettings('AccountsManagerSubwindow', AccountsManagerSubwindow, 'AccountsManager/AccountsManagerWindow.swf', ViewTypes.WINDOW, None, ScopeTemplates.DEFAULT_SCOPE))
+class AccountsManagerButtonController(object):
+    def __init__(self):
+        ServicesLocator.appLoader.onGUISpaceEntered += self.onGUISpaceEntered
+        self.isLobby = False
+        self.flash = None
+        loginPopulate = LoginView._populate
+        lobbyPopulate = LobbyView._populate
+        LoginView._populate = lambda baseClass: self.__hooked_loginPopulate(baseClass, loginPopulate)
+        LobbyView._populate = lambda baseClass: self.__hooked_lobbyPopulate(baseClass, lobbyPopulate)
 
-print '[LOAD_MOD]:  [account_manager v1.06, by S0me0ne, reworked by ShadowHunterRUS & spoter]'
+    @staticmethod
+    def onGUISpaceEntered(spaceID):
+        if spaceID == GuiGlobalSpaceID.LOBBY:
+            app = ServicesLocator.appLoader.getApp()
+            if app is not None:
+                BigWorld.callback(0.0, lambda: app.loadView(SFViewLoadParams('AccountsManagerLoginButton')))
+
+    def __hooked_loginPopulate(self, baseClass, baseFunc):
+        baseFunc(baseClass)
+        self.isLobby = False
+        if self.flash is not None:
+            self.flash.processPopulate()
+
+    def __hooked_lobbyPopulate(self, baseClass, baseFunc):
+        baseFunc(baseClass)
+        self.isLobby = True
+        if self.flash is not None:
+            self.flash.processPopulate()
+
+
+class AccountsManagerLoginButton(View):
+    def _populate(self):
+        g_AccMngr.flash = self
+        # noinspection PyProtectedMember
+        super(AccountsManagerLoginButton, self)._populate()
+        self.processPopulate()
+
+    def _dispose(self):
+        # noinspection PyProtectedMember
+        super(AccountsManagerLoginButton, self)._dispose()
+
+    def processPopulate(self):
+        if self._isDAAPIInited():
+            if g_AccMngr.isLobby:
+                self.flashObject.as_populateLobby()
+            else:
+                self.flashObject.as_populateLogin()
+
+    def processLoginMode(self, enabled=False):
+        if self._isDAAPIInited():
+            self.flashObject.as_setLoginMode(enabled)
+
+    def py_log(self, text):
+        print('[AccountsManagerLoginButton]: %s' % text)
+
+    def py_openAccMngr(self):
+        app = ServicesLocator.appLoader.getApp()
+        app.loadView(SFViewLoadParams('AccountsManager'))
+
+    def py_getTranslate(self):
+        return {'tooltip_l10n': 'Account Manager'}
+
+
+BigWorld.wh_data = UserAccounts()
+g_AccMngr = AccountsManagerButtonController()
+g_entitiesFactories.addSettings(ViewSettings('AccountsManager', AccountsManager, 'AccountsManager.swf', WindowLayer.WINDOW, None, ScopeTemplates.DEFAULT_SCOPE))
+g_entitiesFactories.addSettings(ViewSettings('AccountsManagerSubWindow', AccountsManagerSubWindow, 'AccountsManagerWindow.swf', WindowLayer.WINDOW, None, ScopeTemplates.DEFAULT_SCOPE))
+g_entitiesFactories.addSettings(ViewSettings('AccountsManagerLoginButton', AccountsManagerLoginButton, 'AccountsManagerLoginButton.swf', WindowLayer.WINDOW, None, ScopeTemplates.GLOBAL_SCOPE))
+
+
+print '[LOAD_MOD]:  [account_manager v1.07, by S0me0ne, reworked by ShadowHunterRUS & spoter & Driftkings]'

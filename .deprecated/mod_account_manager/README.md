@@ -1,6 +1,6 @@
 ### account_manager_extended v1.06 ###
 by S0me0ne, 
-reworked by spoter and ShadowHunterRUS
+reworked by spoter and ShadowHunterRUS and Driftkings
 
 
 ### Usage: ###
