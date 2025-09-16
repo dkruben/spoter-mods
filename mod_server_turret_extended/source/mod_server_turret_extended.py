@@ -26,7 +26,8 @@ from gui.mods.mod_mods_gui import g_gui, inject
 # Различные версии клиента
 try:
     # EU-клиент
-    from AvatarInputHandler.siege_mode_player_notifications import SoundNotifications
+    # 2.0.0.0 EU Server
+    from AvatarInputHandler.player_notifications.siege_mode.sound_notifications import SoundNotifications
 except ImportError:
     # LESTA-клиент
     # noinspection PyUnresolvedReferences,PyPep8Naming
@@ -45,8 +46,8 @@ class Config(object):
         Устанавливает идентификатор, версию, автора, кнопки и параметры по умолчанию.
         """
         self.ids = 'serverTurretExtended'
-        self.version = 'v3.15 (2025-03-16)'
-        self.version_id = 315
+        self.version = 'v3.16 (2025-09-16)'
+        self.version_id = 316
         self.author = 'by spoter, reven86'
         self.buttons = {
             'buttonAutoMode': [Keys.KEY_R, [Keys.KEY_LALT, Keys.KEY_RALT]],
